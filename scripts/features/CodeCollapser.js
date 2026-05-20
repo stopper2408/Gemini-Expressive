@@ -77,6 +77,9 @@ class CodeCollapser {
                         btn.removeAttribute('data-test-id');
                         btn.removeAttribute('mattooltip');
                         btn.removeAttribute('title');
+                        btn.removeAttribute('jslog');
+                        btn.removeAttribute('aria-describedby');
+                        btn.removeAttribute('cdk-describedby-host');
 
                         const existingIcons = btn.querySelectorAll('mat-icon, .google-symbols, svg, img');
                         existingIcons.forEach(i => i.remove());

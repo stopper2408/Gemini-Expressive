@@ -64,19 +64,35 @@ class SnippetInjector {
     static insertSnippet(snippet) {
         if (!this.state.node) return;
 
-        const range = document.createRange();
-        range.setStart(this.state.node, this.state.startOffset);
-        range.setEnd(this.state.node, this.state.endOffset);
+        const isTextarea = this.state.node.tagName && this.state.node.tagName.toLowerCase() === 'textarea';
 
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
+        if (isTextarea) {
+            const textarea = this.state.node;
+            const text = textarea.value;
+            const before = text.substring(0, this.state.startOffset);
+            const after = text.substring(this.state.endOffset);
+            
+            textarea.value = before + snippet.content + after;
+            textarea.dispatchEvent(new Event('input', {bubbles: true}));
+            textarea.dispatchEvent(new Event('change', {bubbles: true}));
+            
+            const newCursorPos = this.state.startOffset + snippet.content.length;
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+        } else {
+            const range = document.createRange();
+            range.setStart(this.state.node, this.state.startOffset);
+            range.setEnd(this.state.node, this.state.endOffset);
 
-        document.execCommand('insertText', false, snippet.content);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
 
-        const targetEditor = this.state.node.parentElement ? this.state.node.parentElement.closest('.ql-editor') : null;
-        if (targetEditor) {
-            targetEditor.dispatchEvent(new Event('input', {bubbles: true}));
+            document.execCommand('insertText', false, snippet.content);
+
+            const targetEditor = this.state.node.parentElement ? this.state.node.parentElement.closest('.ql-editor') : null;
+            if (targetEditor) {
+                targetEditor.dispatchEvent(new Event('input', {bubbles: true}));
+            }
         }
 
         this.closeMenu();
@@ -207,10 +223,10 @@ class SnippetInjector {
 
         let inputContainer = null;
         if (this.state.node && this.state.node.parentElement) {
-            inputContainer = this.state.node.parentElement.closest('.text-input-field');
+            inputContainer = this.state.node.parentElement.closest('.text-input-field, .input-area-v2, textarea');
         }
         if (!inputContainer) {
-            inputContainer = document.querySelector('.text-input-field');
+            inputContainer = document.querySelector('.text-input-field, .input-area-v2, textarea');
         }
 
         if (inputContainer) {
@@ -271,6 +287,42 @@ class SnippetInjector {
      * to determine if it matches the configured activation prefix and triggers the menu.
      */
     static checkTrigger() {
+        const activeEl = document.activeElement;
+        const isTextarea = activeEl && activeEl.tagName && activeEl.tagName.toLowerCase() === 'textarea';
+
+        if (isTextarea) {
+            const text = activeEl.value;
+            const offset = activeEl.selectionStart;
+            if (offset !== activeEl.selectionEnd) {
+                this.closeMenu();
+                return;
+            }
+            const textBeforeCursor = text.substring(0, offset);
+
+            const safePrefix = this.settingsRef.snippetPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp('(?:^|\\s)(' + safePrefix + '([\\w-]*))$');
+            const match = textBeforeCursor.match(regex);
+
+            if (match) {
+                const fullTypedText = match[1];
+                const searchWord = match[2].toLowerCase();
+
+                let matches = [];
+                if (this.settingsRef.snippets && Array.isArray(this.settingsRef.snippets)) {
+                    matches = this.settingsRef.snippets.filter(s => {
+                        const cleanKw = s.keyword.replace(/^[/*!#@]+/, '').toLowerCase();
+                        return cleanKw.startsWith(searchWord);
+                    }).slice(0, 5);
+                }
+
+                const startOffset = offset - fullTypedText.length;
+                this.openMenu(fullTypedText, matches, activeEl, startOffset, offset);
+            } else {
+                this.closeMenu();
+            }
+            return;
+        }
+
         const selection = window.getSelection();
         if (!selection || !selection.rangeCount) {
             this.closeMenu();

@@ -201,11 +201,13 @@ class ThemeUtils {
                 root.style.setProperty(`--bg-sys-color-${token}-rgb`, ThemeUtils.hexToRgbString(value));
 
                 root.style.setProperty(`--gem-sys-color--${token}`, value, "important");
+                root.style.setProperty(`--lumi-sys-color--${token}`, value, "important");
                 root.style.setProperty(`--md-sys-color-${token}`, value, "important");
                 root.style.setProperty(`--sys-color--${token}`, value, "important");
 
                 if (body) {
                     body.style.setProperty(`--gem-sys-color--${token}`, value, "important");
+                    body.style.setProperty(`--lumi-sys-color--${token}`, value, "important");
                     body.style.setProperty(`--md-sys-color-${token}`, value, "important");
                     body.style.setProperty(`--sys-color--${token}`, value, "important");
                 }

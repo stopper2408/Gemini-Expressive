@@ -21,7 +21,7 @@ class TimelineBuilder {
      * @returns {Array<HTMLElement>} An array of top-level message container elements.
      */
     static getMessageBlocks() {
-        const selectors = 'user-query, model-response, message-row, chunked-message, [data-message-author], [data-test-id*="message"]';
+        const selectors = 'user-query, model-response, message-row, chunked-message, [data-message-author], [data-test-id*="message"], .response-container';
         const blocks = Array.from(document.querySelectorAll(selectors));
         return blocks.filter(block => !block.parentElement.closest(selectors));
     }

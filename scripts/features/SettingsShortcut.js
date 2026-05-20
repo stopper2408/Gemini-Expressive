@@ -27,7 +27,7 @@ class SettingsShortcut {
      */
     static inject() {
         const nativeSettingsBtns = document.querySelectorAll(
-            'side-nav-action-button[data-test-id="settings-and-help-button"], ' +
+            'gem-nav-list-item[data-test-id="desktop-bard-activity-control"], ' +
             'button[data-test-id="mobile-settings-and-help-control"]'
         );
 
@@ -38,7 +38,8 @@ class SettingsShortcut {
                 wrapperToClone = nativeBtn.closest('side-nav-action-button');
             }
 
-            if (wrapperToClone.previousElementSibling && wrapperToClone.previousElementSibling.classList.contains('bg-expressive-settings-shortcut')) {
+            if ((wrapperToClone.previousElementSibling && wrapperToClone.previousElementSibling.classList.contains('bg-expressive-settings-shortcut')) ||
+                (wrapperToClone.nextElementSibling && wrapperToClone.nextElementSibling.classList.contains('bg-expressive-settings-shortcut'))) {
                 return;
             }
 
@@ -150,7 +151,11 @@ class SettingsShortcut {
                 }
             }
 
-            wrapperToClone.parentNode.insertBefore(customWrapper, wrapperToClone);
+            if (wrapperToClone.getAttribute('data-test-id') === 'desktop-bard-activity-control') {
+                wrapperToClone.parentNode.insertBefore(customWrapper, wrapperToClone.nextSibling);
+            } else {
+                wrapperToClone.parentNode.insertBefore(customWrapper, wrapperToClone);
+            }
         });
     }
 }

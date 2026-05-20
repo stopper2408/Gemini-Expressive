@@ -25,7 +25,7 @@ async function buildZip(browser, manifestObj, version) {
 
         archive.pipe(output);
 
-        const foldersToInclude = ['assets', 'options', 'scripts', 'styles'];
+        const foldersToInclude = ['assets', 'options', 'scripts', 'styles', '_locales'];
         foldersToInclude.forEach(folder => {
             archive.directory(folder + '/', folder);
         });
